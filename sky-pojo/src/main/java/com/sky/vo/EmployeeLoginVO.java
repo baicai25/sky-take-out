@@ -13,13 +13,14 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel(description = "员工登录返回的数据格式")
+@ApiModel(description = "员工登录返回的数据格式666")
+// 类比@Api()和@ApiOpration(),这个是@ApiModel()和@ApiModelProperty()
 public class EmployeeLoginVO implements Serializable {
 
-    @ApiModelProperty("主键值")
+    @ApiModelProperty("主键值1")
     private Long id;
 
-    @ApiModelProperty("用户名")
+    @ApiModelProperty("用户名2")
     private String userName;
 
     @ApiModelProperty("姓名")
