@@ -101,4 +101,14 @@ public class EmployeeController {
     }
 
 
+    @PostMapping("/status/{status}")
+    @ApiOperation("员工账号状态修改")
+    //因为使用了@PathVariable,如果路径中携带的参数名和方法的参数名不一样,
+    // 需要使用@PathVariable("...")进行重命名确保参数能正确赋值
+    public Result UpStatus(@PathVariable Integer status , Long id){
+        log.info("启用或禁用员工参数 ,状态码:{} ,id号{}",status,id);
+        employeeService.UpStatus(status,id);
+        return Result.success();
+    }
+
 }

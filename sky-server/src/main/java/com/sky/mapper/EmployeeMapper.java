@@ -33,4 +33,11 @@ public interface EmployeeMapper {
      * @return
      */
     Page<Employee> pageQuery(EmployeePageQueryDTO employeePageQueryDTO);
+
+
+    /**
+     * 根据id修改员工的(状态)?(信息),
+     * @param employee
+     */
+    void update(Employee employee);
 }

@@ -105,4 +105,21 @@ public class EmployeeServiceImpl implements EmployeeService {
         return new PageResult(total,list);
     }
 
+    /**
+     * 启用禁用员工账号
+     * @param status
+     * @param id
+     */
+    //@Override这个好像没有用
+    public void UpStatus(Integer status, Long id) {
+
+        //这样写的目的是将状态码修改合并到员工数据修改中
+        //但是很莫名奇妙的是这样的修改居然还是使用的post而不是put,
+        //如果是少数的个别修改,直接进行post就行,但是都已经合并到员工修改里了,怎么还是post?
+        Employee employee = Employee.builder()
+                .id(id).status(status).build();
+
+        employeeMapper.update(employee);
+    }
+
 }

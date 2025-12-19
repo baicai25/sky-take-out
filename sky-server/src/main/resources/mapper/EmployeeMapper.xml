@@ -12,4 +12,22 @@
         </where>
         order by create_time desc
     </select>
+
+<!--    我也不知道这个的目的是什么,默认是没有parameterType="Employee"的,不知道为什么要加上-->
+    <update id="update" parameterType="Employee">
+        update employee
+        <set>
+            <if test="name != null and password != ''">name = #{name},</if>
+            <if test="username != null and password != ''">username = #{username},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="phone != null and password != ''">phone = #{phone},</if>
+            <if test="sex != null and password != ''">sex = #{sex},</if>
+            <if test="idNumber != null and password != ''">id_number = #{idNumber},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        where id = #{id}
+    </update>
+
 </mapper>
