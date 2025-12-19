@@ -110,7 +110,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param status
      * @param id
      */
-    //@Override这个好像没有用
+    //@Override这个好像没有用,-------后续我全都删了
     public void UpStatus(Integer status, Long id) {
 
         //这样写的目的是将状态码修改合并到员工数据修改中
@@ -118,6 +118,33 @@ public class EmployeeServiceImpl implements EmployeeService {
         //如果是少数的个别修改,直接进行post就行,但是都已经合并到员工修改里了,怎么还是post?
         Employee employee = Employee.builder()
                 .id(id).status(status).build();
+
+        employeeMapper.update(employee);
+    }
+
+    /**
+     * 根据id查询回显
+     * @param id
+     * @return
+     */
+    public Employee getById(Long id) {
+        Employee employee = employeeMapper.getById(id);
+        employee.setPassword("****");
+        return employee;
+    }
+
+    /**
+     * 修改员工信息
+     * @param employeeDTO
+     */
+    public void update(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+        //EmployeeDTO的属性不全,需要自己额外设置更新时间和操作者等
+        //对象的属性拷贝,因为需要传递的是Employee,需要将DTO的属性拷贝到Employee里面
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
 
         employeeMapper.update(employee);
     }
