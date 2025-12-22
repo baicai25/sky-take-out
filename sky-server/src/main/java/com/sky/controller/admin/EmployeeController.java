@@ -52,7 +52,7 @@ public class EmployeeController {
         claims.put(JwtClaimsConstant.EMP_ID, employee.getId());
         String token = JwtUtil.createJWT(
                 jwtProperties.getAdminSecretKey(),
-                jwtProperties.getAdminTtl(),
+                jwtProperties.getAdminTtl(),     //这里设置的令牌过期时间
                 claims);
 
         EmployeeLoginVO employeeLoginVO = EmployeeLoginVO.builder()
