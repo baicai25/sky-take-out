@@ -80,14 +80,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         //下面是其他未拷贝的属性默认设置--为什么不能直接默认设置呢
         employee.setPassword(DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes()));
         employee.setStatus(StatusConstant.ENABLE);
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+
+
+
+        //通过AOP切面进行公共字段自动填充了,所以下面的全都不要了
+
+/*        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());*/
 
         //设置当前的纪录创建者和修改人的id
         //TOD (改完了) 后面要来把10L改为对应的员工创建者修改者的id
 
-        employee.setCreateUser(BaseContext.getCurrentId());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+/*        employee.setCreateUser(BaseContext.getCurrentId());
+        employee.setUpdateUser(BaseContext.getCurrentId());*/
 
         employeeMapper.insert(employee);
     }
@@ -143,8 +148,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         //EmployeeDTO的属性不全,需要自己额外设置更新时间和操作者等
         //对象的属性拷贝,因为需要传递的是Employee,需要将DTO的属性拷贝到Employee里面
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        //同理注释
+       /* employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());*/
 
         employeeMapper.update(employee);
     }
