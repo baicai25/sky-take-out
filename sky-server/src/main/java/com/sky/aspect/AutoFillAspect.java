@@ -28,6 +28,11 @@ public class AutoFillAspect {
     @Pointcut("execution(* com.sky.mapper.*.*(..)) && @annotation(com.sky.annotation.AutoFill)")
     public void autoFillPointCut() {}
 
+
+    /**
+     * 说实话感觉这个写的是又臭又长
+     * @param joinPoint
+     */
     //前置通知为公共字段赋值
     @Before("autoFillPointCut()")
     public void autoFill(JoinPoint joinPoint) {
