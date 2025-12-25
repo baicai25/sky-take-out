@@ -49,7 +49,7 @@ public interface DishService {
      * @param cateforyId
      * @return
      */
-    List<Dish> list(Integer cateforyId);
+    List<Dish> list(Long cateforyId);
 
     /**
      * 菜品起售停售
@@ -57,4 +57,11 @@ public interface DishService {
      * @param id
      */
     void StartorStop(Integer status, Long id);
+
+    /**
+     * 条件查询菜品和口味
+     * @param dish
+     * @return
+     */
+    List<DishVO> listWithFlavor(Dish dish);
 }
