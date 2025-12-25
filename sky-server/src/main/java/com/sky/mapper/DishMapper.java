@@ -48,7 +48,7 @@ public interface DishMapper {
     Dish getById(Long id);
 
     /**
-     * 根据id批量删除菜品
+     * 根据id批量删除菜品------------------------??????没用吗
      * @param id
      */
     @Delete("delete from dish where id = #{id}")
@@ -66,4 +66,11 @@ public interface DishMapper {
      */
     @AutoFill(value = OperationType.UPDATE)
     void update(Dish dish);
+
+    /**
+     * 根据分类id查询菜品
+     * @param cateforyId
+     * @return
+     */
+    List<Dish> list(Integer cateforyId);
 }
