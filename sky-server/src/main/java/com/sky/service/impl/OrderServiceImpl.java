@@ -318,5 +318,30 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.updateStatus(orderId,Orders.CANCELLED,null,null,LocalDateTime.now(),null);
     }
 
+    /**
+     * 客户催单
+     * @param id
+     */
+    @Override
+    public void reminder(Long id) {
+        //根据id查询订单
+        Orders orders = orderMapper.getOrdersById(id);
+
+        //效验订单是否存在
+        if(orders == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        Map map = new HashMap();
+        map.put("type",2);//1是来单提醒,2是催单
+        map.put("orderId",orders.getId());
+        map.put("content","订单号: "+orders.getNumber());
+
+        String json = JSON.toJSONString(map);
+
+        webSocketServer.sendToAllClient(json);
+
+    }
+
 
 }

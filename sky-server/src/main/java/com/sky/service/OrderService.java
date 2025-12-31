@@ -99,4 +99,11 @@ public interface OrderService {
      * @param orderId
      */
     void orderCancelPay(Long orderId);
+
+
+    /**
+     * 客户催单
+     * @param id
+     */
+    void reminder(Long id);
 }
