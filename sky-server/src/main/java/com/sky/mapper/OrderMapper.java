@@ -77,9 +77,10 @@ public interface OrderMapper {
 
     /**
      * 根据订单状态和下单时间查询订单
-     * @param pendingPayment
+     * @param status
      * @param orderTime
      */
+    //多参数问题,一定要做到属性名和字段名一致,且最好加上@param注解进行说明
     @Select("select * from orders where status = #{status} and order_time = #{orderTime}")
-    List<Orders> getByStatusAndOrderTimeL(Integer pendingPayment, LocalDateTime orderTime);
+    List<Orders> getByStatusAndOrderTimeL(Integer status, LocalDateTime orderTime);
 }
