@@ -56,4 +56,18 @@ public class ShoppingCartController {
         return Result.success();
     }
 
+
+    /**
+     * 购物车商品数量-1
+     * @param shoppingCartDTO
+     * @return
+     */
+    @PostMapping("/sub")
+    @ApiOperation("购物车商品数量-1")
+    public Result delete(@RequestBody ShoppingCartDTO shoppingCartDTO){
+        log.info("购物车商品数量-1: *---");
+        shoppingCartService.delete(shoppingCartDTO);
+        return Result.success();
+    }
+
 }

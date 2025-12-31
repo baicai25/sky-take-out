@@ -1,8 +1,16 @@
 package com.sky.mapper;
 
+import com.github.pagehelper.Page;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.result.PageResult;
+import com.sky.vo.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface OrderMapper {
@@ -25,4 +33,53 @@ public interface OrderMapper {
      * @param orders
      */
     void update(Orders orders);
+
+    /**
+     * 历史订单查询
+     * @param userId
+     * @return
+     */
+    Page<Orders> getHistoryById(@Param("userId") Long userId,
+                                @Param("status") Integer status);
+
+    /**
+     * 查询订单详情
+     * @param orderId
+     * @return
+     */
+    @Select("select * from orders where id = #{orderId}")
+    Orders getOrdersById(Long orderId);
+
+    /**
+     * 订单分页查询
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    Page<OrderVO> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    Integer getNumsBystatus(Integer status);
+
+
+    /**
+     * ------
+     * @param orderId
+     * @param status
+     * @param cancelReason
+     * @param rejectionReason
+     * @param cancelTime
+     * @param deliveryTime
+     */
+    void updateStatus(Long orderId, Integer status, String cancelReason , String rejectionReason  , LocalDateTime cancelTime, LocalDateTime  deliveryTime );
+
+    /**
+     * 根据订单状态和下单时间查询订单
+     * @param pendingPayment
+     * @param orderTime
+     */
+    @Select("select * from orders where status = #{status} and order_time = #{orderTime}")
+    List<Orders> getByStatusAndOrderTimeL(Integer pendingPayment, LocalDateTime orderTime);
 }

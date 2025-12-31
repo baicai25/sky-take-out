@@ -1,25 +1,27 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
-import com.sky.dto.OrdersPaymentDTO;
-import com.sky.dto.OrdersSubmitDTO;
+import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
+import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
-import org.apache.poi.ss.formula.functions.T;
+import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.insert(orders);
 
         //向订单明细表插入n条数据
-        List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
+        List<OrderDetail> orderDetailList = new ArrayList<>();
         for (ShoppingCart cart : shoppingCartList) {
             OrderDetail orderDetail = new OrderDetail();
             BeanUtils.copyProperties(cart, orderDetail);
@@ -150,5 +152,155 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.update(orders);
     }
+
+    /**
+     * 历史订单查询
+     * @param page
+     * @param pageSize
+     * @param status
+     * @return
+     */
+    @Override
+    public PageResult getHistoryById(Integer page, Integer pageSize, Integer status) {
+        PageHelper.startPage(page, pageSize);
+        Long userId = BaseContext.getCurrentId();
+
+        //OrderVO继承了Orders,所以可以拷贝orders
+        List<OrderVO> list = new ArrayList();
+        Page<Orders> ordersPage = orderMapper.getHistoryById(userId,status);
+
+        if (ordersPage != null && ordersPage.getTotal() > 0) {
+            for (Orders orders : ordersPage) {
+                List<OrderDetail> orderDetailList = orderDetailMapper.getOrderDetailsByOrderId(orders.getId());
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders, orderVO);//-----
+                orderVO.setOrderDetailList(orderDetailList);
+                list.add(orderVO);
+            }
+        }
+
+        return new PageResult(ordersPage.getTotal(),list);
+    }
+
+    /**
+     * 查询订单详情
+     * @param orderId
+     * @return
+     */
+    @Override
+    public OrderVO orderDetailByOrderId(Long orderId) {
+        Orders orders = orderMapper.getOrdersById(orderId);
+        List<OrderDetail> orderDetailsByOrderId = orderDetailMapper.getOrderDetailsByOrderId(orderId);
+        OrderVO orderVO = new OrderVO();
+        BeanUtils.copyProperties(orders, orderVO);
+        orderVO.setOrderDetailList(orderDetailsByOrderId);
+        return orderVO;
+    }
+
+    /**
+     * 再来一单
+     * @param id
+     */
+    @Override
+    public void orderAgain(Long id) {
+        List<OrderDetail> orderDetailsByOrderId = orderDetailMapper.getOrderDetailsByOrderId(id);
+        shoppingCartMapper.deleteByUserId(BaseContext.getCurrentId());
+
+        for (OrderDetail orderDetail : orderDetailsByOrderId) {
+            ShoppingCart shoppingCart = new ShoppingCart();
+
+            BeanUtils.copyProperties(orderDetail, shoppingCart);
+
+            shoppingCart.setUserId(BaseContext.getCurrentId());
+            shoppingCart.setCreateTime(LocalDateTime.now());
+
+            shoppingCartMapper.insert(shoppingCart);
+        }
+    }
+
+    /**
+     * 订单分页查询
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult page(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Page<OrderVO> orderVO = orderMapper.pageQuery(ordersPageQueryDTO);
+        return new PageResult(orderVO.getTotal(),orderVO.getResult());
+    }
+
+
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    @Override
+    public OrderStatisticsVO orderStatistics() {
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+
+        orderStatisticsVO.setToBeConfirmed(orderMapper.getNumsBystatus(Orders.TO_BE_CONFIRMED));
+        orderStatisticsVO.setConfirmed(orderMapper.getNumsBystatus(Orders.CONFIRMED));
+        orderStatisticsVO.setDeliveryInProgress(orderMapper.getNumsBystatus(Orders.DELIVERY_IN_PROGRESS));
+        return orderStatisticsVO;
+    }
+
+    /**
+     * 订单接取功能
+     * @param id
+     */
+    @Override
+    public void orderAccepet(Long id) {
+        //System.out.println(orderId);
+        orderMapper.updateStatus(id,Orders.CONFIRMED,null,null,null,null);
+    }
+
+    /**
+     * 订单派送开始
+     * @param id
+     */
+    @Override
+    public void orderDelivery(Long id) {
+        orderMapper.updateStatus(id,Orders.DELIVERY_IN_PROGRESS,null,null,null,null);
+    }
+
+
+    /**
+     * 订单配送完成
+     * @param id
+     */
+    @Override
+    public void orderComplete(Long id) {
+        orderMapper.updateStatus(id,Orders.COMPLETED,null,null,null,LocalDateTime.now());
+    }
+
+    /**
+     * 取消订单
+     * @param ordersCancelDTO
+     */
+    @Override
+    public void orderCancel(OrdersCancelDTO ordersCancelDTO) {
+        Long id = ordersCancelDTO.getId();
+        String cancelReason = ordersCancelDTO.getCancelReason();
+        orderMapper.updateStatus(id,Orders.CANCELLED,cancelReason,null,LocalDateTime.now(),null);
+    }
+
+    /**
+     * 拒绝订单
+     * @param ordersRejectionDTO
+     */
+    @Override
+    public void orderRejection(OrdersRejectionDTO ordersRejectionDTO) {
+        Long id = ordersRejectionDTO.getId();
+        String rejectionReason = ordersRejectionDTO.getRejectionReason();
+        orderMapper.updateStatus(id,Orders.CANCELLED,null,rejectionReason,LocalDateTime.now(),null);
+    }
+
+    @Override
+    public void orderCancelPay(Long orderId) {
+        orderMapper.updateStatus(orderId,Orders.CANCELLED,null,null,LocalDateTime.now(),null);
+    }
+
 
 }

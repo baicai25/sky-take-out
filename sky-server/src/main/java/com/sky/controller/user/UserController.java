@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
+@RestController("userController")
 @RequestMapping("/user/user")
-@Api(tags = "Cl端用户相关接口")
+@Api(tags = "C端用户相关接口")
 @Slf4j
 public class UserController {
 
@@ -58,6 +58,18 @@ public class UserController {
 
         return Result.success(userLoginVO);
     }
+
+    /**
+     * 微信登出
+     * @return
+     */
+    @PostMapping("/logout")
+    @ApiOperation("微信用户登出")
+    public Result logout(){
+        log.info("微信用户登出");
+        return Result.success();
+    }
+
 
 
 }
