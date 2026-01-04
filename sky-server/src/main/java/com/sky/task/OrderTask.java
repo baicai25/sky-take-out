@@ -22,7 +22,7 @@ public class OrderTask {
     /**
      * 处理超时订单
      */
-    @Scheduled(cron = "0 * * * * ?")//每分钟触发一次
+    @Scheduled(cron = "0 0/5 * * * ?")//每分钟触发一次
     public void processTimeoutOrder(){
         log.info("定时任务开启,每60s触发,当前时间为; {}", LocalDateTime.now());
         LocalDateTime time = LocalDateTime.now().plusMinutes(-15);

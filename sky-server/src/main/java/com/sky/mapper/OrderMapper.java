@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
@@ -81,6 +82,14 @@ public interface OrderMapper {
      * @param orderTime
      */
     //多参数问题,一定要做到属性名和字段名一致,且最好加上@param注解进行说明
-    @Select("select * from orders where status = #{status} and order_time = #{orderTime}")
+    @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
     List<Orders> getByStatusAndOrderTimeL(Integer status, LocalDateTime orderTime);
+
+
+    /**
+     * 根据动态条件统计营业额数据
+     * @param map
+     * @return
+     */
+    Double sumByMap(Map map);
 }
