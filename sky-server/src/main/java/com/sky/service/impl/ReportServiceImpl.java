@@ -4,6 +4,7 @@ import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.apache.commons.lang.StringUtils;
@@ -72,7 +73,6 @@ public class ReportServiceImpl implements ReportService {
      */
     @Override
     public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
-
         List<LocalDate> dateList = GetDateList(begin, end);
 
         //存放每天的新增用户数量
@@ -84,22 +84,18 @@ public class ReportServiceImpl implements ReportService {
             //查询date日期对应的营业额数据,营业额指的是状态为已完成的所有订单金额总值
             LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
             LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
-
             Map map = new HashMap();
 
             map.put("end", endTime);
             //截止到end的总用户数量
             Integer totalUser = userMapper.countByMap(map);
-
             map.put("begin", beginTime);
             //新增用户数量
             Integer newUser = userMapper.countByMap(map);
 
             totalUserList.add(totalUser);
             newUserList.add(newUser);
-
         }
-
 
         return UserReportVO
                 .builder()
@@ -110,9 +106,60 @@ public class ReportServiceImpl implements ReportService {
     }
 
 
+    /**
+     *
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public OrderReportVO getOrderStatistics(LocalDate begin, LocalDate end) {
+        List<LocalDate> dateList = GetDateList(begin, end);
+
+        List<Integer> orderCountList = new ArrayList<>();
+        List<Integer> validOrderCountList = new ArrayList<>();
+
+        //一个for循环建议只干一件事
+        for (LocalDate date : dateList) {
+            LocalDateTime beginTime = LocalDateTime.of(date, LocalTime.MIN);
+            LocalDateTime endTime = LocalDateTime.of(date, LocalTime.MAX);
+            //查询每天的订单总数
+            Integer orderCOunt = getOrderCount(beginTime,endTime,null);
+            //查询每天的有效订单数,已完成de
+            Integer validOrderCount = getOrderCount(beginTime,endTime,Orders.COMPLETED);
+
+            orderCountList.add(orderCOunt);
+            validOrderCountList.add(validOrderCount);
+        }
+
+        //计算时间区间内的订单总数
+        Integer totalOrderCount = orderCountList.stream().reduce(Integer::sum).get();
+        //计算时间区间内的有效订单数
+        Integer validOrderCount = validOrderCountList.stream().reduce(Integer::sum).get();
+        //计算订单完成率 -- 订单完成率=有效订单数/总订单数
+        Double orderCompletionRate = 0.0;
+        if(totalOrderCount != 0){
+            orderCompletionRate =  validOrderCount.doubleValue() / totalOrderCount;
+        }
+        return OrderReportVO
+                .builder()
+                .dateList(StringUtils.join(dateList,","))
+                .orderCountList(StringUtils.join(orderCountList,","))
+                .validOrderCountList(StringUtils.join(validOrderCountList,","))
+                .totalOrderCount(totalOrderCount)
+                .validOrderCount(validOrderCount)
+                .orderCompletionRate(orderCompletionRate)
+                .build();
+    }
 
 
-    public List<LocalDate> GetDateList(LocalDate begin, LocalDate end){
+    /**
+     * 根据开始结束时间统计其中的日期集合
+     * @param begin
+     * @param end
+     * @return
+     */
+    private List<LocalDate> GetDateList(LocalDate begin, LocalDate end){
         List<LocalDate> dateList = new ArrayList();
 
         while (!begin.isAfter(end)) {
@@ -120,8 +167,22 @@ public class ReportServiceImpl implements ReportService {
             dateList.add(begin);
             begin = begin.plusDays(1);
         }
-
         return dateList;
+    }
+
+    /**
+     * 根据条件统计订单数量
+     * @param begin
+     * @param end
+     * @param status
+     * @return
+     */
+    private Integer getOrderCount(LocalDateTime begin, LocalDateTime end ,Integer status){
+        Map map = new HashMap();
+        map.put("begin", begin);
+        map.put("end", end);
+        map.put("status", status);
+        return orderMapper.countByMap(map);
     }
 
 }
