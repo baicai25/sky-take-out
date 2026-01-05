@@ -48,8 +48,8 @@ sky:
 
   alioss:
     endpoint: oss-cn-hangzhou.aliyuncs.com
-    access-key-id: LTAI5tKVEYQsdQeuC3Ve53Vh-
-    access-key-secret: Cx0EWVAGk6h6nqcLMKm1eUDUF03WyJ-
+    access-key-id: #LTAI5tKVEYQsdQeuC3Ve53Vh-
+    access-key-secret: #Cx0EWVAGk6h6nqcLMKm1eUDUF03WyJ-
     bucket-name: baicai25
   wechat:
     appid: ${sky.wechat.appid}
